@@ -15,6 +15,11 @@ context, and propose updates to context files as a `git apply`-able patch.
 Parse `$ARGUMENTS` for:
 - `--days N` (default: 7) — how far back to scan merged PRs
 
+## Model Selection
+
+- **Extract agents** (Phase 3): use **haiku** — mechanical data extraction, one PR per agent
+- **Synthesize, Review, Revise agents** (Phases 4-6): use **opus** — requires judgment, cross-PR reasoning, and style matching
+
 ## Pipeline
 
 Execute these phases in order. Exit early where indicated.
@@ -61,7 +66,7 @@ For each `.json` file in `artifacts/pr-data/`:
 1. Extract the PR ID from the filename (e.g., `123.json` → `123`).
 2. Read the file `$SKILL_DIR/prompts/extract-agent.md`.
 3. In the prompt text, replace every `{ID}` with the actual PR ID.
-4. Dispatch a **background** Agent with the constructed prompt.
+4. Dispatch a **background** Agent with the constructed prompt, using model **haiku**.
 
 Dispatch in waves of up to 10 agents. After dispatching a wave:
 - Poll every 30 seconds for the expected extraction files
@@ -82,7 +87,7 @@ echo '{"early_exit":"no_knowledge","prs_scanned":N,"prs_with_knowledge":0}' > ar
 ### Phase 4: Synthesize
 
 1. Read `$SKILL_DIR/prompts/synthesize-agent.md`.
-2. Dispatch a **foreground** Agent with the prompt.
+2. Dispatch a **foreground** Agent with the prompt, using model **opus**.
 3. After the agent completes, check for changes:
    ```bash
    git diff --stat
@@ -101,7 +106,7 @@ echo '{"early_exit":"no_knowledge","prs_scanned":N,"prs_with_knowledge":0}' > ar
 ### Phase 5: Review
 
 1. Read `$SKILL_DIR/prompts/review-agent.md`.
-2. Dispatch a **foreground** Agent with the prompt.
+2. Dispatch a **foreground** Agent with the prompt, using model **opus**.
 3. After the agent completes, read `artifacts/review.md` and parse the `verdict`
    from the YAML frontmatter.
 
@@ -111,7 +116,7 @@ If the review verdict is **PASS**, skip this phase entirely.
 
 If the verdict is **REVISE**:
 1. Read `$SKILL_DIR/prompts/revise-agent.md`.
-2. Dispatch a **foreground** Agent with the prompt.
+2. Dispatch a **foreground** Agent with the prompt, using model **opus**.
 
 ### Phase 7: Artifacts
 
