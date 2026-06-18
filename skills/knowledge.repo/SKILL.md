@@ -26,10 +26,12 @@ Execute these phases in order. Exit early where indicated.
 
 ### Phase 1: Setup
 
-1. Run `bash $SKILL_DIR/scripts/detect-forge.sh` and capture the output.
-   - Line 1 is the forge type (`github` or `gitlab`)
-   - Line 2 is the owner/repo slug
-   - If it fails, print the error and STOP.
+1. Read the repo context file provided by the CI runner:
+   ```bash
+   cat artifacts/repo-context.json
+   ```
+   This contains `forge` (github/gitlab) and `slug` (owner/repo).
+   If it does not exist, print an error and STOP.
 
 2. Create the artifacts directory structure:
    ```bash
@@ -43,14 +45,11 @@ Execute these phases in order. Exit early where indicated.
      echo '{"early_exit":"no_context_files","prs_scanned":0}' > artifacts/run-report.json
      ```
 
-### Phase 2: Fetch
+### Phase 2: Verify PR Data
 
-1. Run:
-   ```bash
-   python3 $SKILL_DIR/scripts/fetch-prs.py --forge {forge} --repo {slug} --days {days}
-   ```
+PR data is pre-fetched by the CI runner and placed in `artifacts/pr-data/`.
 
-2. Count the fetched PR files:
+1. Count the PR data files:
    ```bash
    ls artifacts/pr-data/*.json 2>/dev/null | wc -l
    ```
