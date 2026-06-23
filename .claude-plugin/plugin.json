@@ -1,5 +1,8 @@
 {
   "name": "knowledge-skills",
   "description": "Autonomous knowledge management skills for keeping AI context files up to date",
-  "version": "0.1.0"
+  "version": "0.1.0",
+  "author": {
+    "name": "opendatahub-io"
+  }
 }
