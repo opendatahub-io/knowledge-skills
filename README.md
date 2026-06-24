@@ -2,7 +2,7 @@
 
 Claude Code skills for autonomous knowledge management across repositories.
 
-## knowledge.repo
+## knowledge-repo
 
 A skill that scans merged PRs from the last N days, extracts knowledge relevant to AI agent context, and proposes updates to context files (CLAUDE.md, AGENTS.md) as a `git apply`-able patch.
 
