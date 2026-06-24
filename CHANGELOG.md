@@ -2,4 +2,4 @@
 
 ## 0.1.0
 
-- Initial implementation of `knowledge.repo` skill
+- Initial implementation of `knowledge-repo` skill

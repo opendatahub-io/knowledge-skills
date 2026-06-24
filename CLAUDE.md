@@ -4,7 +4,7 @@
 
 This repo hosts Claude Code skills in the `knowledge.*` namespace. Currently contains one skill:
 
-- `skills/knowledge.repo/` -- scans merged PRs and proposes context file updates
+- `skills/knowledge-repo/` -- scans merged PRs and proposes context file updates
 
 The skill is a Claude Code plugin skill (SKILL.md + agent prompts + helper scripts). It does NOT run from this repo -- it runs in target repos that have context files (CLAUDE.md, AGENTS.md).
 
