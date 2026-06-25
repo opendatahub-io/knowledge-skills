@@ -4,18 +4,18 @@ Claude Code skills for autonomous knowledge management across repositories.
 
 ## knowledge-repo
 
-A skill that scans merged PRs from the last N days, extracts knowledge relevant to AI agent context, and proposes updates to context files (CLAUDE.md, AGENTS.md) as a `git apply`-able patch.
+A skill that processes pre-fetched PR/MR data, extracts knowledge relevant to AI agent context, and proposes updates to context files (CLAUDE.md, AGENTS.md) as a `git apply`-able patch.
 
 ### How it works
 
 The skill runs a linear pipeline with 7 phases:
 
-1. **Setup** -- detects whether the repo is on GitHub or GitLab, identifies which context files exist
-2. **Fetch** -- calls `gh`/`glab` CLI to collect merged PR data (diffs, descriptions, review comments, CI results)
-3. **Extract** -- dispatches one agent per PR (in parallel) to summarize what knowledge each PR contains
-4. **Synthesize** -- a single agent reads all extractions plus the current context files, then edits the context files with proposed updates
-5. **Review** -- a separate agent critiques the proposed changes for accuracy, relevance, and redundancy (adversarial review -- this agent does not see the synthesis agent's rationale)
-6. **Revise** -- if the reviewer found issues, a revision agent fixes them
+1. **Setup** -- reads `artifacts/repo-context.json` (forge type and repo slug, provided by the CI runner), discovers which context files exist
+2. **Verify PR Data** -- checks that the CI runner has placed PR data files in `artifacts/pr-data/`
+3. **Extract** -- dispatches one agent per PR (in parallel waves of 10, using haiku) to identify what knowledge each PR contains
+4. **Synthesize** -- a single agent (opus) reads all extractions plus the current context files, then edits the context files with proposed updates
+5. **Review** -- a separate agent (opus) critiques the proposed changes for accuracy, relevance, and redundancy (adversarial review -- this agent does not see the synthesis agent's rationale)
+6. **Revise** -- if the reviewer found issues, a revision agent (opus) fixes them in a single pass
 7. **Artifacts** -- captures the final changes as a `git diff` patch, writes a run report, and resets the working tree
 
 The skill produces artifacts in `artifacts/` -- external tooling applies the patch, creates a branch, and opens a PR/MR for human review.
@@ -23,17 +23,28 @@ The skill produces artifacts in `artifacts/` -- external tooling applies the pat
 ### Pipeline diagram
 
 ```
-SETUP --> FETCH --> EXTRACT --> SYNTHESIZE --> REVIEW --> REVISE --> ARTIFACTS
-            |         |            |             |          |
-         scripts    agents       agent         agent      agent
-                   (per-PR)    (one pass)    (one pass)  (one pass)
+SETUP --> VERIFY --> EXTRACT --> SYNTHESIZE --> REVIEW --> REVISE --> ARTIFACTS
+            |          |            |             |          |
+         check PR    agents       agent         agent      agent
+          data      (per-PR,    (one pass,    (one pass,  (one pass,
+                     haiku)       opus)         opus)       opus)
 ```
+
+### CI runner contract
+
+The skill does not fetch PR data or detect the forge type itself. It expects a CI runner to prepare these inputs before invocation:
+
+| Input | Description |
+|-------|-------------|
+| `artifacts/repo-context.json` | JSON with `forge` (github/gitlab) and `slug` (owner/repo) |
+| `artifacts/pr-data/{id}.json` | One file per merged PR, containing diff, description, commit messages, and review comments |
+
+The [knowledge-sync](https://gitlab.com/redhat/rhel-ai/agentic-ci/knowledge-sync) project is the reference CI runner. It handles repo cloning, PR fetching via GitHub/GitLab REST APIs, forge detection, and -- after the skill runs -- branch creation, patch application, and PR/MR submission.
 
 ### Artifacts produced
 
 | File | Description |
 |------|-------------|
-| `artifacts/pr-data/{id}.json` | Raw PR data fetched from the forge |
 | `artifacts/pr-extractions/{id}.md` | Per-PR knowledge extraction with categories and evidence |
 | `artifacts/proposed-updates.patch` | `git apply`-able patch with the proposed context file changes |
 | `artifacts/changes-summary.md` | Human-readable rationale for each change (becomes the PR description) |
@@ -44,7 +55,7 @@ SETUP --> FETCH --> EXTRACT --> SYNTHESIZE --> REVIEW --> REVISE --> ARTIFACTS
 
 The skill is designed to run autonomously in a CI pipeline on a schedule. It accepts a `--days N` argument (default: 7) to control how far back to scan.
 
-The skill is forge-agnostic -- it detects GitHub or GitLab from the `origin` remote and uses the appropriate CLI (`gh` or `glab`).
+The skill is forge-agnostic -- it reads the forge type from `artifacts/repo-context.json` and the normalized PR data schema means downstream agents don't need to know which forge produced it.
 
 ### Stateless
 

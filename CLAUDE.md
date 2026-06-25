@@ -13,8 +13,9 @@ The skill is a Claude Code plugin skill (SKILL.md + agent prompts + helper scrip
 ### Separation of concerns
 
 - **SKILL.md** is a thin orchestrator. It runs scripts and dispatches agents but contains no domain logic.
-- **Helper scripts** (`scripts/`) handle deterministic work: forge detection, PR data fetching, context file discovery. These are bash/Python and call `gh`/`glab` CLI tools.
+- **Helper scripts** (`scripts/`) handle deterministic work: context file discovery. Currently contains `list-context-files.sh`.
 - **Agent prompts** (`prompts/`) handle judgment calls: knowledge extraction, synthesis, review, revision. Each gets its own isolated agent context.
+- **CI runner** (external, e.g. [knowledge-sync](https://gitlab.com/redhat/rhel-ai/agentic-ci/knowledge-sync)) handles forge detection, PR data fetching, repo cloning, and post-run patch application/PR creation.
 
 ### Adversarial review pattern
 
@@ -32,17 +33,25 @@ If the skill repeatedly proposes changes that reviewers reject, the right fix is
 
 ## Design Decisions
 
-### Forge-agnostic via CLI tools
+### Forge-agnostic via normalized inputs
 
-Uses `gh` for GitHub and `glab` for GitLab, detected from the `origin` remote URL. The PR data schema is normalized so downstream agents don't need to know which forge produced it. Always use CLI tools over raw API calls.
+The skill reads forge type from `artifacts/repo-context.json` (provided by the CI runner). PR data is pre-fetched and normalized by the CI runner so downstream agents don't need to know which forge produced it. The skill itself does not call `gh`/`glab` or any forge API.
+
+### CI runner contract
+
+The skill expects the CI runner to prepare:
+- `artifacts/repo-context.json` with `forge` and `slug` fields
+- `artifacts/pr-data/{id}.json` with one file per merged PR (diff, description, commit messages, review comments)
+
+The reference CI runner is [knowledge-sync](https://gitlab.com/redhat/rhel-ai/agentic-ci/knowledge-sync), which handles GitHub/GitLab API calls, diff truncation, and post-run forge operations (branch creation, patch application, PR/MR submission).
 
 ### Per-PR extraction agents (not batch)
 
 Each PR gets its own agent context for extraction. This avoids context overflow from many PRs and allows parallel processing (dispatched in waves of 10). The synthesis agent then sees only compact extractions, not raw PR data.
 
-### Diff truncation
+### Model selection
 
-Diffs exceeding 5000 lines are truncated by `fetch-prs.py` with a `diff_truncated: true` flag. The extract agent is instructed to note this limitation in its output.
+Extract agents use haiku (mechanical per-PR data extraction). Synthesize, review, and revise agents use opus (judgment, cross-PR reasoning, style matching).
 
 ### Single revision pass
 
