@@ -12,7 +12,7 @@ The skill runs a linear pipeline with 7 phases:
 
 1. **Setup** -- reads `artifacts/repo-context.json` (forge type and repo slug, provided by the CI runner), discovers which context files exist
 2. **Verify PR Data** -- checks that the CI runner has placed PR data files in `artifacts/pr-data/`
-3. **Extract** -- dispatches one agent per PR (in parallel waves of 10, using haiku) to identify what knowledge each PR contains
+3. **Extract** -- dispatches one agent per PR (in parallel waves of 10, using sonnet) to identify what knowledge each PR contains
 4. **Synthesize** -- a single agent (opus) reads all extractions plus the current context files, then edits the context files with proposed updates
 5. **Review** -- a separate agent (opus) critiques the proposed changes for accuracy, relevance, and redundancy (adversarial review -- this agent does not see the synthesis agent's rationale)
 6. **Revise** -- if the reviewer found issues, a revision agent (opus) fixes them in a single pass
@@ -27,7 +27,7 @@ SETUP --> VERIFY --> EXTRACT --> SYNTHESIZE --> REVIEW --> REVISE --> ARTIFACTS
             |          |            |             |          |
          check PR    agents       agent         agent      agent
           data      (per-PR,    (one pass,    (one pass,  (one pass,
-                     haiku)       opus)         opus)       opus)
+                     sonnet)      opus)         opus)       opus)
 ```
 
 ### CI runner contract

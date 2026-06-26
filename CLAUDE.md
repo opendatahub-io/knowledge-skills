@@ -51,7 +51,7 @@ Each PR gets its own agent context for extraction. This avoids context overflow 
 
 ### Model selection
 
-Extract agents use haiku (mechanical per-PR data extraction). Synthesize, review, and revise agents use opus (judgment, cross-PR reasoning, style matching).
+Extract agents use sonnet (mechanical per-PR data extraction). Synthesize, review, and revise agents use opus (judgment, cross-PR reasoning, style matching).
 
 ### Single revision pass
 
