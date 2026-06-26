@@ -17,7 +17,7 @@ Parse `$ARGUMENTS` for:
 
 ## Model Selection
 
-- **Extract agents** (Phase 3): use **haiku** — mechanical data extraction, one PR per agent
+- **Extract agents** (Phase 3): use **sonnet** — mechanical data extraction, one PR per agent
 - **Synthesize, Review, Revise agents** (Phases 4-6): use **opus** — requires judgment, cross-PR reasoning, and style matching
 
 ## Pipeline
@@ -65,7 +65,7 @@ For each `.json` file in `artifacts/pr-data/`:
 1. Extract the PR ID from the filename (e.g., `123.json` → `123`).
 2. Read the file `$SKILL_DIR/prompts/extract-agent.md`.
 3. In the prompt text, replace every `{ID}` with the actual PR ID.
-4. Dispatch a **background** Agent with the constructed prompt, using model **haiku**.
+4. Dispatch a **background** Agent with the constructed prompt, using model **sonnet**.
 
 Dispatch in waves of up to 10 agents. After dispatching a wave:
 - Poll every 30 seconds for the expected extraction files
