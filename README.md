@@ -4,16 +4,16 @@ Claude Code skills for autonomous knowledge management across repositories.
 
 ## knowledge-repo
 
-A skill that processes pre-fetched PR/MR data, extracts knowledge relevant to AI agent context, and proposes updates to context files (CLAUDE.md, AGENTS.md) as a `git apply`-able patch.
+A skill that processes pre-fetched PR/MR data, extracts knowledge relevant to AI agent context, and proposes updates to context files (CLAUDE.md, AGENTS.md) and skill files (SKILL.md, prompts) as a `git apply`-able patch.
 
 ### How it works
 
 The skill runs a linear pipeline with 7 phases:
 
-1. **Setup** -- reads `artifacts/repo-context.json` (forge type and repo slug, provided by the CI runner), discovers which context files exist
+1. **Setup** -- reads `artifacts/repo-context.json` (forge type and repo slug, provided by the CI runner), discovers which context and skill files exist
 2. **Verify PR Data** -- checks that the CI runner has placed PR data files in `artifacts/pr-data/`
 3. **Extract** -- dispatches one agent per PR (in parallel waves of 10, using sonnet) to identify what knowledge each PR contains
-4. **Synthesize** -- a single agent (opus) reads all extractions plus the current context files, then edits the context files with proposed updates
+4. **Synthesize** -- a single agent (opus) reads all extractions plus the current context and skill files, then edits them with proposed updates
 5. **Review** -- a separate agent (opus) critiques the proposed changes for accuracy, relevance, and redundancy (adversarial review -- this agent does not see the synthesis agent's rationale)
 6. **Revise** -- if the reviewer found issues, a revision agent (opus) fixes them in a single pass
 7. **Artifacts** -- captures the final changes as a `git diff` patch, writes a run report, and resets the working tree
@@ -46,7 +46,7 @@ The [knowledge-sync](https://gitlab.com/redhat/rhel-ai/agentic-ci/knowledge-sync
 | File | Description |
 |------|-------------|
 | `artifacts/pr-extractions/{id}.md` | Per-PR knowledge extraction with categories and evidence |
-| `artifacts/proposed-updates.patch` | `git apply`-able patch with the proposed context file changes |
+| `artifacts/proposed-updates.patch` | `git apply`-able patch with the proposed context and skill file changes |
 | `artifacts/changes-summary.md` | Human-readable rationale for each change (becomes the PR description) |
 | `artifacts/review.md` | Reviewer findings and verdict |
 | `artifacts/run-report.json` | Machine-readable run metadata (counts, date range, verdict) |
@@ -64,7 +64,7 @@ Each run is independent -- the skill has no memory of prior runs. If it repeated
 ### Early exits
 
 The pipeline exits early (with a run report) when:
-- No context files (CLAUDE.md, AGENTS.md) exist in the repo
+- No context files (CLAUDE.md, AGENTS.md) or skill files exist in the repo
 - No merged PRs in the time window
 - No extractable knowledge found in any PR
 - The synthesis agent decided no context updates are warranted

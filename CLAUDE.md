@@ -4,16 +4,16 @@
 
 This repo hosts Claude Code skills in the `knowledge.*` namespace. Currently contains one skill:
 
-- `skills/knowledge-repo/` -- scans merged PRs and proposes context file updates
+- `skills/knowledge-repo/` -- scans merged PRs and proposes context and skill file updates
 
-The skill is a Claude Code plugin skill (SKILL.md + agent prompts + helper scripts). It does NOT run from this repo -- it runs in target repos that have context files (CLAUDE.md, AGENTS.md).
+The skill is a Claude Code plugin skill (SKILL.md + agent prompts + helper scripts). It does NOT run from this repo -- it runs in target repos that have context files (CLAUDE.md, AGENTS.md) or skill files (SKILL.md, prompt files).
 
 ## Architecture
 
 ### Separation of concerns
 
 - **SKILL.md** is a thin orchestrator. It runs scripts and dispatches agents but contains no domain logic.
-- **Helper scripts** (`scripts/`) handle deterministic work: context file discovery. Currently contains `list-context-files.sh`.
+- **Helper scripts** (`scripts/`) handle deterministic work: context and skill file discovery. Currently contains `list-context-files.sh`.
 - **Agent prompts** (`prompts/`) handle judgment calls: knowledge extraction, synthesis, review, revision. Each gets its own isolated agent context.
 - **CI runner** (external, e.g. [knowledge-sync](https://gitlab.com/redhat/rhel-ai/agentic-ci/knowledge-sync)) handles forge detection, PR data fetching, repo cloning, and post-run patch application/PR creation.
 

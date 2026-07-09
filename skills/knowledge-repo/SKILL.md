@@ -1,6 +1,6 @@
 ---
 name: knowledge-repo
-description: Scan merged PRs and propose updates to AI context files (CLAUDE.md, AGENTS.md) as a git-apply-able patch. Non-interactive.
+description: Scan merged PRs and propose updates to AI context files (CLAUDE.md, AGENTS.md) and skill files (SKILL.md, prompts) as a git-apply-able patch. Non-interactive.
 user-invocable: true
 allowed-tools: Bash, Read, Write, Agent, Glob
 ---
@@ -8,7 +8,8 @@ allowed-tools: Bash, Read, Write, Agent, Glob
 # knowledge-repo
 
 Scan merged PRs from the last N days, extract knowledge relevant to AI agent
-context, and propose updates to context files as a `git apply`-able patch.
+context, and propose updates to context and skill files as a `git apply`-able
+patch.
 
 ## Arguments
 
