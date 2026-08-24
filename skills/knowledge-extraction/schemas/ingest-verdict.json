@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Knowledge Extraction Ingest Verdict",
+  "description": "Receipt summarizing what the knowledge-extraction skill processed.",
+  "type": "object",
+  "required": ["processed", "skipped"],
+  "additionalProperties": false,
+  "properties": {
+    "processed": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of issue groups ingested into wiki and examples."
+    },
+    "skipped": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of groups skipped (transient, cascade, no Jira, not fixed, no fix MRs, or already ingested)."
+    }
+  }
+}
