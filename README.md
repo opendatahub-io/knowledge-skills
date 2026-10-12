@@ -2,6 +2,19 @@
 
 Claude Code skills for autonomous knowledge management across repositories.
 
+For changes to the knowledge management skills, read [AGENTS.md](AGENTS.md)
+for shared conventions and [.agents/README.md](.agents/README.md) for the
+skill authoring guide.
+
+## Skills
+
+| Skill | Description |
+|-------|-------------|
+| [knowledge-repo](skills/knowledge-repo/) | Scan merged PRs and propose context and skill file updates as a patch |
+| [enrich-reports](skills/enrich-reports/) | Fill analysis fields on case-study skeletons |
+| [knowledge-extraction](skills/knowledge-extraction/) | Ingest an enriched failure report into wiki pages and an examples catalog |
+| [wiki-curator](skills/wiki-curator/) | Merge duplicate wiki pages, drop stale claims, and bound the log |
+
 ## knowledge-repo
 
 A skill that processes pre-fetched PR/MR data, extracts knowledge relevant to AI agent context, and proposes updates to context files (CLAUDE.md, AGENTS.md) and skill files (SKILL.md, prompts) as a `git apply`-able patch.
