@@ -25,6 +25,11 @@ Parse `$ARGUMENTS` for:
 
 Execute these phases in order. Exit early where indicated.
 
+Run all agents in the foreground (`run_in_background: false`) and wait for
+their results. Do not end your turn to wait for a background notification.
+Before reporting success, verify that `artifacts/run-report.json` exists and,
+unless taking an early exit below, `artifacts/proposed-updates.patch` exists.
+
 ### Phase 1: Setup
 
 1. Read the repo context file provided by the CI runner:
@@ -66,15 +71,12 @@ For each `.json` file in `artifacts/pr-data/`:
 1. Extract the PR ID from the filename (e.g., `123.json` → `123`).
 2. Read the file `$SKILL_DIR/prompts/extract-agent.md`.
 3. In the prompt text, replace every `{ID}` with the actual PR ID.
-4. Dispatch a **background** Agent with the constructed prompt, using model **sonnet**.
+4. Dispatch a **foreground** Agent with the constructed prompt, using model **sonnet**.
+5. After the agent completes, read `artifacts/pr-extractions/{id}.md` before
+   starting the next PR. If the file is missing, print an error and STOP;
+   do not treat a failed extraction as having no knowledge.
 
-Dispatch in waves of up to 10 agents. After dispatching a wave:
-- Poll every 30 seconds for the expected extraction files
-  (`artifacts/pr-extractions/{id}.md`)
-- Timeout after 5 minutes per wave
-- Log any timed-out PR IDs and continue to the next wave
-
-After all waves complete, check if any extraction file contains knowledge items.
+After all PRs have been extracted, check if any extraction file contains knowledge items.
 Read each `artifacts/pr-extractions/*.md` file and look for content under the
 `## Knowledge Items` heading beyond just the heading itself.
 

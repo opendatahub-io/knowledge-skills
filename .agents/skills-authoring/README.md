@@ -31,8 +31,8 @@ picks up `skills/`, `.claude/skills/`, and `.opencode/skills/`.
 `knowledge-repo` reads `artifacts/repo-context.json` (`forge`, `slug`) and
 `artifacts/pr-data/{id}.json`. It writes `artifacts/`, including
 `proposed-updates.patch`. The review prompt stays isolated from
-`artifacts/changes-summary.md`. Extract agents run in waves of 10. Revise runs
-once. Model choice is in that skill's `SKILL.md`.
+`artifacts/changes-summary.md`. Extract agents run in the foreground, one PR
+at a time. Revise runs once. Model choice is in that skill's `SKILL.md`.
 
 `enrich-reports` reads `artifacts/case-study-skeletons/` and writes
 `artifacts/enrichments/` through `scripts/write-enrichment.py`.
