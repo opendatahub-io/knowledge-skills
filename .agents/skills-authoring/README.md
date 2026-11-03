@@ -32,7 +32,9 @@ picks up `skills/`, `.claude/skills/`, and `.opencode/skills/`.
 `artifacts/pr-data/{id}.json`. It writes `artifacts/`, including
 `proposed-updates.patch`. The review prompt stays isolated from
 `artifacts/changes-summary.md`. Extract agents run in the foreground, one PR
-at a time. Revise runs once. Model choice is in that skill's `SKILL.md`.
+at a time. Review feedback is evaluated across PRs before synthesis; only
+kept, repo-verified human themes may become context rules. Revise runs once.
+Model choice is in that skill's `SKILL.md`.
 
 `enrich-reports` reads `artifacts/case-study-skeletons/` and writes
 `artifacts/enrichments/` through `scripts/write-enrichment.py`.

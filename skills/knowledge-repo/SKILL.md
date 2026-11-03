@@ -8,8 +8,8 @@ allowed-tools: Bash, Read, Write, Agent, Glob
 # knowledge-repo
 
 Scan merged PRs from the last N days, extract knowledge relevant to AI agent
-context, and propose updates to context and skill files as a `git apply`-able
-patch.
+context, evaluate human replies to AI code review across PRs, and propose
+updates to context, review guidance, and skill files as a `git apply`-able patch.
 
 ## Arguments
 
@@ -19,7 +19,7 @@ Parse `$ARGUMENTS` for:
 ## Model Selection
 
 - **Extract agents** (Phase 3): use **sonnet** — mechanical data extraction, one PR per agent
-- **Synthesize, Review, Revise agents** (Phases 4-6): use **opus** — requires judgment, cross-PR reasoning, and style matching
+- **Evaluate, Synthesize, Review, Revise agents** (Phases 4-7): use **opus** — requires judgment, cross-PR reasoning, and style matching
 
 ## Pipeline
 
@@ -86,7 +86,16 @@ echo '{"early_exit":"no_knowledge","prs_scanned":N,"prs_with_knowledge":0}' > ar
 ```
 (Replace N with the actual count of PR data files.)
 
-### Phase 4: Synthesize
+### Phase 4: Evaluate Review Feedback
+
+1. Read `$SKILL_DIR/prompts/evaluate-feedback-agent.md`.
+2. Dispatch a **foreground** Agent with the prompt, using model **opus**.
+3. After the agent completes, read `artifacts/review-feedback-evaluation.md`.
+   If the file is missing, print an error and STOP. The evaluation may have
+   no kept themes, but the file must exist so synthesis cannot bypass the
+   provenance and repo-verification checks.
+
+### Phase 5: Synthesize
 
 1. Read `$SKILL_DIR/prompts/synthesize-agent.md`.
 2. Dispatch a **foreground** Agent with the prompt, using model **opus**.
@@ -105,14 +114,14 @@ echo '{"early_exit":"no_knowledge","prs_scanned":N,"prs_with_knowledge":0}' > ar
    git diff > artifacts/proposed-diff.txt
    ```
 
-### Phase 5: Review
+### Phase 6: Review
 
 1. Read `$SKILL_DIR/prompts/review-agent.md`.
 2. Dispatch a **foreground** Agent with the prompt, using model **opus**.
 3. After the agent completes, read `artifacts/review.md` and parse the `verdict`
    from the YAML frontmatter.
 
-### Phase 6: Revise (conditional)
+### Phase 7: Revise (conditional)
 
 If the review verdict is **PASS**, skip this phase entirely.
 
@@ -120,7 +129,7 @@ If the verdict is **REVISE**:
 1. Read `$SKILL_DIR/prompts/revise-agent.md`.
 2. Dispatch a **foreground** Agent with the prompt, using model **opus**.
 
-### Phase 7: Artifacts
+### Phase 8: Artifacts
 
 1. Capture the final patch:
    ```bash
