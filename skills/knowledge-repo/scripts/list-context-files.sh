@@ -6,7 +6,7 @@ mkdir -p "$(dirname "$output_file")"
 true > "$output_file"
 
 # AI context files
-for f in CLAUDE.md AGENTS.md .claude/CLAUDE.md; do
+for f in CLAUDE.md AGENTS.md .ai-review-prompt .claude/CLAUDE.md; do
     [ -f "$f" ] && echo "$f" >> "$output_file"
 done
 
